@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link your CSS file here if needed -->
+    <style>
+        /* Add some basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center; /* Align horizontally in the center */
+            align-items: center; /* Align vertically in the center */
+            height: 100vh; /* Make the body take the full height of the viewport */
+            background-color: #f0f0f0; /* Add a background color */
+        }
+        .dashboard-container {
+            width: 300px; /* Set the width */
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            width: calc(100% - 22px); /* Adjust input width to fit button padding */
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Faculty Dashboard</h1>
+        <!-- Button to add student -->
+        <button onclick="addStudent()">Add Student</button>
+        <!-- Form to enter marks -->
+        <form id="enterMarksForm">
+            <input type="text" id="studentId" placeholder="Student ID" required>
+            <input type="text" id="course" placeholder="Course" required>
+            <input type="number" id="marks" placeholder="Marks" required>
+            <button type="submit" onclick="enterMarks()">Enter Marks</button>
+        </form>
+    </div>
+
+    <script>
+        // API keys
+        const API_KEY = 'your-api-key'; // Replace 'your-api-key' with your actual API key
+
+        // Function to navigate to the add student page
+        function addStudent() {
+            window.location.href = "firstpg.html";
+        }
+
+        // Function to enter marks
+        async function enterMarks(event) {
+            event.preventDefault(); // Prevent form submission
+            const studentId = document.getElementById('studentId').value;
+            const course = document.getElementById('course').value;
+            const marks = document.getElementById('marks').value;
+            try {
+                const response = await fetch('http://your-api-url/marks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({ student_id: studentId, course: course, marks: marks })
+                });
+                if (response.ok) {
+                    // If marks entered successfully, display success message
+                    alert('Marks entered successfully!');
+                } else {
+                    console.error('Error entering marks:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error entering marks:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+
+

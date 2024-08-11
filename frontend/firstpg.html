@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add some basic styling */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input, button {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+        }
+        .studentsList {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .student {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <a href="menu.html"> Logout </a>
+    <h1>Student Database</h1>
+
+    <!-- Form for adding a new student -->
+    <form id="addStudentForm">
+        <input type="text" id="firstName" placeholder="First Name" required>
+        <input type="text" id="lastName" placeholder="Last Name" required>
+        <input type="date" id="dateOfBirth" placeholder="Date of Birth" required>
+        <input type="text" id="gender" placeholder="Gender" required>
+        <input type="text" id="phoneNo" placeholder="Phone Number" required>
+        <input type="text" id="major" placeholder="Major" required>
+        <button type="submit">Add Student</button>
+    </form>
+
+    <!-- Students list -->
+    <div class="studentsList" id="studentsList">
+        <!-- Students will be displayed here -->
+    </div>
+
+    <script>
+        // Function to fetch students data from the backend API
+        async function fetchStudents() {
+            try {
+                const response = await fetch('http://localhost:3000/api/students', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'http://localhost:3000/api/students'
+                    }
+                });
+                const students = await response.json();
+                // Display students data
+                displayStudents(students);
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+
+        async function fetchStudentById(id) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/students/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'http://localhost:3000/api/students/:id'
+                    }
+                });
+                const students = await response.json();
+                
+                return students;
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+
+    function displayStudents(students) {
+    const studentsList = document.getElementById('studentsList');
+    studentsList.innerHTML = ''; // Clear previous data
+    students.forEach(student => {
+        const studentElement = document.createElement('div');
+        studentElement.classList.add('student');
+        studentElement.innerHTML = `
+            <h2>${student.first_name} ${student.last_name}</h2>
+            <p>Date of Birth: ${student.date_of_birth}</p>
+            <p>Gender: ${student.gender}</p>
+            <p>Phone Number: ${student.phone_no}</p>
+            <p>Major: ${student.major}</p>
+            <button onclick="deleteStudent(${student.new_student_id})">Delete</button>
+            <button onclick="openUpdatePopup(${student.new_student_id})">Update</button>
+        `;
+        studentsList.appendChild(studentElement);
+    });
+}
+
+async function openUpdatePopup(student) {
+    const updateFormContainer = document.createElement('div');
+    updateFormContainer.classList.add('update-form-container');
+    console.log(student)
+    const updateForm = document.createElement('form');
+    updateForm.innerHTML = `
+        <h2>Update Student</h2>
+        <label for="firstName">First Name:</label>
+        <input type="text" id="first_name_u" ">
+        <label for="lastName" >Last Name:</label>
+        <input type="text" id="last_name_u" ">
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="date_of_birth_u" ">
+        <label for="gender">Gender:</label>
+        <input type="text" id="gender_u" ">
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone_no_u" ">
+        <label for="major">Major:</label>
+        <input type="text" id="major_u" ">
+        <button type="submit" onclick="updateStudent('${student}')">Save</button>
+
+    `;
+    
+    // Append the update form to the container
+    updateFormContainer.appendChild(updateForm);
+
+    // Append the container to the document body
+    document.body.appendChild(updateFormContainer);
+}
+
+
+        // Function to add a new student
+        async function addStudent(event) {
+            event.preventDefault(); // Prevent form submission
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const gender = document.getElementById('gender').value;
+            const phoneNo = document.getElementById('phoneNo').value;
+            const major = document.getElementById('major').value;
+            try {
+                const response = await fetch('http://localhost:3000/api/students', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'http://localhost:3000/api/students'
+                    },
+                    body: JSON.stringify({ first_name: firstName, last_name: lastName, date_of_birth: dateOfBirth, gender, phone_no: phoneNo, major })
+                });
+                if (response.ok) {
+                    // If student added successfully, fetch and display updated students list
+                    fetchStudents();
+                } else {
+                    console.error('Error adding student:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error adding student:', error);
+            }
+        }
+
+        // Function to delete a student by ID
+        async function deleteStudent(studentId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/students/${studentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'http://localhost:3000/api/students/:id'
+                    }
+                });
+                if (response.ok) {
+                    // If student deleted successfully, fetch and display updated students list
+                    fetchStudents();
+                } else {
+                    console.error('Error deleting student:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error deleting student:', error);
+            }
+        }
+
+        //Function to update a student by ID
+        // async function updateStudent(studentId,event) {
+        //     event.preventDefault(); // Prevent form submission
+        //     const firstName = document.getElementById('first_name_u').value;
+        //     const lastName = document.getElementById('last_name_u').value;
+        //     const dateOfBirth = document.getElementById('date_of_birth_u').value;
+        //     const gender = document.getElementById('gender_u').value;
+        //     const phoneNo = document.getElementById('phone_no_u').value;
+        //     const major = document.getElementById('major_u').value;
+        //     try {
+        //         const response = await fetch(`http://localhost:3000/api/students/${studentId}`, {
+        //             method: 'PUT',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-API-Key': 'http://localhost:3000/api/students/id'
+        //             },
+        //             body: JSON.stringify({ new_student_id: studentId, first_name: firstName, last_name: lastName, date_of_birth: dateOfBirth, gender: gender, phone_no: phoneNo, major: major})
+        //         });
+        //         if (response.ok) {
+        //             // If student updated successfully, fetch and display updated students list
+        //             fetchStudents();
+        //         } else {
+        //             console.error('Error updating student:', response.statusText);
+        //         }
+        //     } catch (error) {
+        //         console.error('Error updating student:', error);
+        //     }
+        // }
+        async function updateStudent(studentId,event) {
+    try {
+        // Fetch form input values
+        const firstName = document.getElementById('first_name_u').value;
+        const lastName = document.getElementById('last_name_u').value;
+        const dateOfBirth = document.getElementById('date_of_birth_u').value;
+        const gender = document.getElementById('gender_u').value;
+        const phoneNo = document.getElementById('phone_no_u').value;
+        const major = document.getElementById('major_u').value;
+
+        // Prepare request body with form input values
+        const requestBody = {
+            new_student_id: studentId,
+            first_name: firstName,
+            last_name: lastName,
+            date_of_birth: dateOfBirth,
+            gender: gender,
+            phone_no: phoneNo,
+            major: major
+        };
+
+        console.log(requestBody)
+
+        const response = await fetch(`http://localhost:3000/api/students/${studentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': 'http://localhost:3000/api/students/:id'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (response.ok) {
+            // If student updated successfully, fetch and display updated students list
+            fetchStudents();
+        } else {
+            console.error('Error updating student:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error updating student:', error);
+    }
+}
+
+
+        // Add event listener to the form for adding a new student
+        document.getElementById('addStudentForm').addEventListener('submit', addStudent);
+
+        // Call fetchStudents function to fetch and display students data when the page loads
+        fetchStudents();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Your head content -->
+</head>
+<body>
+   
+    <!-- Add a link to navigate to the login page -->
+    <a href="menu.html">Logout</a>
+    <!-- Your remaining content -->
+</body>
+</html>
+
